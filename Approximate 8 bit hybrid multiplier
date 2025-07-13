@@ -1,0 +1,158 @@
+module partial_product(a, b, p0, p1, p2, p3, p4, p5, p6, p7);
+  input [7:0] b;
+  input a;
+  output p0, p1, p2, p3, p4, p5, p6, p7;
+
+  assign p0 = b[0] & a;
+  assign p1 = b[1] & a;
+  assign p2 = b[2] & a;
+  assign p3 = b[3] & a;
+  assign p4 = b[4] & a;
+  assign p5 = b[5] & a;
+  assign p6 = b[6] & a;
+  assign p7 = b[7] & a;
+endmodule
+
+module ha(
+  input a, b,
+  output sum, co
+);
+  assign sum = a ^ b;
+  assign co = a & b;
+endmodule
+
+module dha(
+input a,b,
+output sum,ca);
+assign sum=~(a|b);
+assign ca=~(a&b);
+endmodule
+
+module diha(
+input a,b,
+output sum,ca);
+assign sum=(a|b);
+assign ca=(a&b);
+endmodule
+
+
+module FA(
+  input a, b, c,
+  output s, co
+);
+  assign s = a ^ b ^ c;
+  assign co = (a & b) | (b & c) | (c & a);
+endmodule
+
+module DFA(input a,b,c,
+          output s,co
+    );
+assign s = ~(a|b|c);
+assign co = ~((a&b)|(a&b)|(a&b));
+
+endmodule
+
+module DIFA(input a,b,c,
+          output s,co
+    );
+assign s = (a|b|c);
+assign co = ((a&b)|(a&b)|(a&b));
+
+endmodule
+
+
+module compressor5_2(
+  input x1, x2, x3, x4, x5,
+  output sum, carry
+);
+  wire s, c;
+  assign s = ((x1 ^ x2) ^ (~(x3 ^ x4)));
+  assign c = ((x1 | x2) & (x3 | x4) & ((x1 ^ x2) & (~(x3 ^ x4))));
+  assign sum = x5 ^ s;
+  assign carry = (~(x5 | s)) | c;
+endmodule
+
+module invcompressor5_2(
+  input x1, x2, x3, x4, x5,
+  output sum, carry
+);
+  wire s, c;
+  assign s = ((x1 ^ x2) ^ (~(x3 ^ x4)));
+  assign c = ((x1 | x2) & (x3 | x4) & ((x1 ^ x2) & (~(x3 ^ x4))));
+  assign sum = (~(x5 ^ s));
+  assign carry = (((x5 | s)) | c);
+endmodule
+
+module comp_4_1 (
+    input a,b,c,d,
+    output k);
+
+  assign k=(a&b&(c|d));
+
+endmodule//4:1 compressor
+
+module icomp_4_1 (
+    input a,b,c,d,
+    output out
+);
+
+    assign k=~(a&b&(c|d));
+
+endmodule
+
+module approximate_mul(a, b, op);
+  input [7:0] a, b;
+  output [15:0] op;
+
+  wire [7:0] p0, p1, p2, p3, p4, p5, p6, p7;
+  wire s11, c11, s21, c21, s31, c31, s41, c41, s51, c51, s61, c61;
+  wire s12, c12, s22, c22, s32, c32, s42, c42, s52, c52, s62, c62;
+  wire s72, c72, s82, c82, s92, c92, s102, c102, s112, c112, s122, c122;
+  wire s13, c13, s23, c23, s33, c33, s43, c43, s53, c53, s63, c63;
+  wire s73, c73, s83, c83, s93, c93, s103, c103, s113, c113, s123, c123;
+  wire s133, c133, s143, c143;
+
+  // Partial products
+  partial_product pp1(a[0], b, p0[0], p0[1], p0[2], p0[3], p0[4], p0[5], p0[6], p0[7]);
+  partial_product pp2(a[1], b, p1[0], p1[1], p1[2], p1[3], p1[4], p1[5], p1[6], p1[7]);
+  partial_product pp3(a[2], b, p2[0], p2[1], p2[2], p2[3], p2[4], p2[5], p2[6], p2[7]);
+  partial_product pp4(a[3], b, p3[0], p3[1], p3[2], p3[3], p3[4], p3[5], p3[6], p3[7]);
+  partial_product pp5(a[4], b, p4[0], p4[1], p4[2], p4[3], p4[4], p4[5], p4[6], p4[7]);
+  partial_product pp6(a[5], b, p5[0], p5[1], p5[2], p5[3], p5[4], p5[5], p5[6], p5[7]);
+  partial_product pp7(a[6], b, p6[0], p6[1], p6[2], p6[3], p6[4], p6[5], p6[6], p6[7]);
+  partial_product pp8(a[7], b, p7[0], p7[1], p7[2], p7[3], p7[4], p7[5], p7[6], p7[7]);
+
+  // Level 1 Reduction
+  dha h1(p0[4], p1[3], s11, c11);
+  invcompressor4_1 c1(p0[5], p1[4], p2[3], p3[2], c21);
+  invcompressor4_1 c2(p0[6], p1[5], p2[4], p3[3], c31);
+  invcompressor4_1 c3(p0[7], p1[6], p2[5], p3[4], c41);
+  invcompressor5_2 c1(p1[7], p2[6], p3[5], p4[4],p3[5], s51, c51);
+  DFA f1(p2[7], p3[6], p4[5], s61, c61);
+  dha h2(p3[7], p4[6], s71, c71);
+
+  // Level 2 Reduction
+  invcompressor4_1 c4(s11, p2[1], p1[3], p0[4], c12);
+  invcompressor4_1 c5(c11, s21, p1[4], p0[5], c22);
+  invcompressor4_1 c6(c21, p2[4], p1[5], p0[6], c32);
+  invcompressor4_1 c7(c31, s51, p1[6], p0[7], c42);
+  compressor5_2 c2(c41, c51, s61, p2[6], p1[7], s52, c52);
+  compressor5_2 c3(c61, s71, p4[5], p2[6], p2[7], s62, c62);
+  compressor5_2 c4(c71, s81, p5[5], p4[6], p3[7], s72, c72);
+  compressor5_2 c5(c81,p7[4], p6[5], p5[6], p4[7], s82, c82);
+  DIFA f2(p5[7], p6[6], p7[5], s92, c92);
+  diha h3(p6[7], p7[6], s102, c102);
+
+  // Level 3 Reduction
+  ha h4(p0[1], p1[0], s13, c13);
+  ha h5(s12, p2[0], s23, c23);
+  ha h6(c42, s52, s33, c33);
+  FA f3(0, c52, s62, s43, c43);
+  FA f4(0, c62, s72, s53, c53);
+  FA f5(0, c72, s82, s63, c63);
+  FA f6(0, c82, s92, s73, c73);
+  FA f7(0, c92, s102, s83, c83);
+  FA f8(0, c102, p7[7], s93, c93);
+  // Output assignment
+  assign op = {c93, s83, s73, s63, s53, s43, s33, c32, c22, c12, 1, 0, 0, 1, 0, p0[0]};
+endmodule
