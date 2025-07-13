@@ -1,0 +1,148 @@
+module comp_4_1 (
+    input a,b,c,d,
+    output k);
+
+  assign k=(a&b&(c|d));
+
+endmodule//4:1 compressor
+
+module icomp_4_1 (
+    input a,b,c,d,
+    output out
+);
+
+    assign k=~(a&b&(c|d));
+
+endmodule
+
+
+module ha(
+input a,b,
+  output sum,co
+    );
+assign sum = a^b;
+assign co = a&b;
+endmodule//half adder
+
+module dha(
+input a,b,
+output sum,ca);
+assign sum=~(a|b);
+assign ca=~(a&b);
+endmodule
+
+module diha(
+input a,b,
+output sum,ca);
+assign sum=(a|b);
+assign ca=(a&b);
+endmodule
+
+module FA(input a,b,c,
+          output s,co
+    );
+assign s = a^b^c;
+assign co = (a&b) | (b&c) | (c&a);
+
+endmodule//full adder
+
+module DFA(input a,b,c,
+          output s,co
+    );
+assign s = ~(a|b|c);
+assign co = ~((a&b)|(a&b)|(a&b));
+
+endmodule
+
+module DIFA(input a,b,c,
+          output s,co
+    );
+assign s = (a|b|c);
+assign co = ((a&b)|(a&b)|(a&b));
+
+endmodule
+
+
+
+
+
+module multplier4_1(
+ output [15:0]m,
+ input [7:0]a,
+ input [7:0]b
+   );
+//wires
+wire ab00,ab10,ab20,ab30,ab40,ab50,ab60,ab70,ab01,ab11,ab21,ab31,ab41,ab51,ab61,ab71,ab02,ab12,ab22,ab32,ab42,ab52,ab62,ab72;
+wire ab03,ab13,ab23,ab33,ab43,ab53,ab63,ab73,ab04,ab14,ab24,ab34,ab44,ab54,ab64,ab74,ab05,ab15,ab25,ab35,ab45,ab55,ab65,ab75;
+wire ab06,ab16,ab26,ab36,ab46,ab56,ab66,ab76,ab07,ab17,ab27,ab37,ab47,ab57,ab67,ab77;
+wire s1,s4,s8,s10,s12;
+wire c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12;
+
+//partial products also invertion
+assign ab00 = a[0]&b[0]; assign ab10 = a[1]&b[0]; assign ab20 = a[2]&b[0]; assign ab30 = a[3]&b[0]; assign ab40 =~( a[4]&b[0]); assign ab50 = ~(a[5]&b[0]); assign ab60 = ~(a[6]&b[0]);assign ab70 = ~(a[7]&b[0]); 
+assign ab01 = a[0]&b[1]; assign ab11 = a[1]&b[1]; assign ab21 = a[2]&b[1]; assign ab31 = ~(a[3]&b[1]); assign ab41 = ~(a[4]&b[1]); assign ab51 = ~(a[5]&b[1]); assign ab61 = ~(a[6]&b[1]);assign ab71 = ~(a[7]&b[1]); 
+assign ab02 = a[0]&b[2]; assign ab12 = a[1]&b[2]; assign ab22 = ~(a[2]&b[2]); assign ab32 = ~(a[3]&b[2]); assign ab42 = ~(a[4]&b[2]); assign ab52 = ~(a[5]&b[2]); assign ab62 = ~(a[6]&b[2]);assign ab72 = ~(a[7]&b[2]); 
+assign ab03 = a[0]&b[3]; assign ab13 = ~(a[1]&b[3]); assign ab23 = ~(a[2]&b[3]); assign ab33 = ~(a[3]&b[3]); assign ab43 = ~(a[4]&b[3]); assign ab53 = ~(a[5]&b[3]); assign ab63 = ~(a[6]&b[3]);assign ab73 = ~(a[7]&b[3]); 
+assign ab04 = ~(a[0]&b[4]); assign ab14 = ~(a[1]&b[4]); assign ab24 = ~(a[2]&b[4]); assign ab34 = ~(a[3]&b[4]); assign ab44 = ~(a[4]&b[4]); assign ab54 = ~(a[5]&b[4]); assign ab64 = ~(a[6]&b[4]);assign ab74 = ~(a[7]&b[4]); 
+assign ab05 = ~(a[0]&b[5]); assign ab15 = ~(a[1]&b[5]); assign ab25 = ~(a[2]&b[5]); assign ab35 = ~(a[3]&b[5]); assign ab45 = ~(a[4]&b[5]); assign ab55 = ~(a[5]&b[5]); assign ab65 = ~(a[6]&b[5]);assign ab75 = ~(a[7]&b[5]);
+assign ab06 = ~(a[0]&b[6]); assign ab16 = ~(a[1]&b[6]); assign ab26 = ~(a[2]&b[6]); assign ab36 = ~(a[3]&b[6]); assign ab46 = ~(a[4]&b[6]); assign ab56 = ~(a[5]&b[6]); assign ab66 = ~(a[6]&b[6]);assign ab76 = ~(a[7]&b[6]);
+assign ab07 = ~(a[0]&b[7]); assign ab17 = ~(a[1]&b[7]); assign ab27 = ~(a[2]&b[7]); assign ab37 = ~(a[3]&b[7]); assign ab47 = ~(a[4]&b[7]); assign ab57 = ~(a[5]&b[7]); assign ab67 = ~(a[6]&b[7]);assign ab77 = ~(a[7]&b[7]);
+//step 2
+dha h1(ab04,ab13,s1,c1);
+icomp_4_1 h2(ab05,ab14,ab23,ab32,c2);
+icomp_4_1 h3(ab06,ab15,ab24,ab33,c3);
+dha h4(ab42,ab51,s4,c4);
+icomp_4_1 h5(ab07,ab16,ab25,ab34,c5);
+icomp_4_1 h6(ab43,ab52,ab61,ab70,c6);
+icomp_4_1 h7(ab17,ab26,ab35,ab44,c7);
+DFA h8(ab53,ab62,ab71,s8,c8);
+icomp_4_1 h9(ab27,ab36,ab45,ab54,c9);
+dha h10(ab63,ab72,s10,c10);
+icomp_4_1 h11(ab37,ab46,ab55,ab64,c11);
+dha h12(ab47,ab56,s12,c12);
+//step inverion
+assign ab40 = ~ab40; assign ab50 = ~ab50; assign ab60 = ~ab60;assign ab70 = ~ab70; 
+assign ab31 = ~ab31; assign ab41 = ~ab41; assign ab51 = ~ab51; assign ab61 = ~ab61;assign ab71 = ~ab71; 
+assign ab22 = ~ab22; assign ab32 = ~ab32; assign ab42 = ~ab42; assign ab52 = ~ab52; assign ab62 = ~ab62;assign ab72 = ~ab72; 
+assign ab13 = ~ab13; assign ab23 = ~ab23; assign ab33 = ~ab33; assign ab43 = ~ab43; assign ab53 = ~ab53; assign ab63 = ~ab63;assign ab73 = ~ab73; 
+assign ab04 = ~ab04; assign ab14 = ~ab14; assign ab24 = ~ab24; assign ab34 = ~ab34; assign ab44 = ~ab44; assign ab54 = ~ab54; assign ab64 = ~ab64;assign ab74 = ~ab74; 
+assign ab05 = ~ab05; assign ab15 = ~ab15; assign ab25 = ~ab25; assign ab35 = ~ab35; assign ab45 = ~ab45; assign ab55 = ~ab55; assign ab65 = ~ab65 ;assign ab75 = ~ab75;
+assign ab06 = ~ab06; assign ab16 = ~ab16; assign ab26 = ~ab26; assign ab36 = ~ab36; assign ab46 = ~ab46; assign ab56 = ~ab56; assign ab66 = ~ab66;assign ab76 = ~ab76;
+assign ab07 = ~ab07; assign ab17 = ~ab17; assign ab27 = ~ab27; assign ab37 = ~ab37; assign ab47 = ~ab47; assign ab57 = ~ab57; assign ab67 = ~ab67;assign ab77 = ~ab77;
+//step 2 
+ha h13(ab02,ab11,s13,c13);
+FA h14(ab03,ab12,ab21,s14,c14);
+comp_4_1 h15(s1,ab22,ab31,ab40,c15);
+comp_4_1 h16(c1,ab41,ab50,0,c16);
+comp_4_1 h17(c2,s4,ab70,0,c17);
+comp_4_1 h18(c3,c4,0,0,c18);
+comp_4_1 h19(c5,c6,s8,0,c19);
+comp_4_1 h20(c7,c8,s10,0,c20);
+comp_4_1 h21(c9,c10,ab73,0,c21);
+comp_4_1 h22(c11,s12,ab05,ab74,c22);
+comp_4_1 h23(c12,ab57,ab66,ab77,c23);
+diha h24(ab67,ab76,s24,c24);
+//step3
+ha h25(ab01,ab10,s25,c25);
+ha h26(s13,ab20,s26,c26);
+FA h27(c13,s14,c26,s27,c27);
+ha h28(c23,s24,s28,c28);
+FA h29(ab77,c24,c28,s29,c29);
+//final answer
+assign m[15] = c29;
+assign m[14] = s29;
+assign m[13] = s28;
+assign m[12] = c22;
+assign m[11] = c21;
+assign m[10] = c20;
+assign m[9] = c19;
+assign m[8] = c18;
+assign m[7] = c17;
+assign m[6] = c16;
+assign m[5] = c15;
+assign m[4] = c27;
+assign m[3] = s27;
+assign m[2] = s26;
+assign m[1] = s25;
+assign m[0] = ab00;
+endmodule
